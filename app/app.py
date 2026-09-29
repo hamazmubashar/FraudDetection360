@@ -13,7 +13,11 @@ REPO_ROOT = os.path.dirname(BASE_DIR)
 # ---------------------------------------------------------
 # Model LOADING (config-driven path, cached with hourly refresh)
 # ---------------------------------------------------------
+<<<<<<< HEAD
 MODEL_PATH = os.getenv("FRAUD_MODEL_PATH", os.path.join(REPO_ROOT, "artifacts", "final_fraud_model.pkl"))
+=======
+MODEL_PATH = os.getenv("FRAUD_MODEL_PATH", "artifacts/final_fraud_model.pkl")
+>>>>>>> 76fdce0a5c546d451c59377548a0537c5dd69e9c
 
 @st.cache_resource
 def load_model():
