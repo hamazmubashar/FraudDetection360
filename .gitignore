@@ -1,0 +1,18 @@
+# Data files (too large for GitHub)
+datasets/raw/*
+datasets/processed/*.csv
+datasets/processed/*.parquet
+!datasets/raw/.gitkeep
+!datasets/processed/.gitkeep
+
+# Model artifacts (too large for GitHub - link in README instead)
+artifacts/*.pkl
+
+# Environment
+.env
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store

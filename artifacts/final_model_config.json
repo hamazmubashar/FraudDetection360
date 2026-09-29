@@ -1,0 +1,20 @@
+{
+  "model_type": "LightGBM",
+  "scale_pos_weight": 27.46147358274595,
+  "default_threshold": 0.55,
+  "fn_cost_assumption": 149.24,
+  "fp_cost_assumption": 10,
+  "threshold_sensitivity": {
+    "fp_cost_5": 0.4,
+    "fp_cost_10": 0.55,
+    "fp_cost_20": 0.7,
+    "fp_cost_30": 0.75,
+    "fp_cost_50": 0.85
+  },
+  "test_set_performance_at_default_threshold": {
+    "false_positives": 9858,
+    "false_negatives": 1169,
+    "true_positives": 2895,
+    "total_cost": 273041.56
+  }
+}

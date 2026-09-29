@@ -1,0 +1,10 @@
+streamlit==1.63.0
+pandas
+numpy
+lightgbm
+scikit-learn
+imbalanced-learn
+plotly
+joblib
+sqlalchemy
+pymysql
