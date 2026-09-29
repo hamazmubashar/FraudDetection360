@@ -7,13 +7,13 @@ import os
 import joblib
 import json
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(BASE_DIR)
+
 # ---------------------------------------------------------
 # Model LOADING (config-driven path, cached with hourly refresh)
 # ---------------------------------------------------------
-MODEL_PATH = os.getenv(
-    "FRAUD_MODEL_PATH",
-    "/Users/maddy/Projects/FRAUDDETECTION360_Complete/artifacts/final_fraud_model.pkl"
-)
+MODEL_PATH = os.getenv("FRAUD_MODEL_PATH", os.path.join(REPO_ROOT, "artifacts", "final_fraud_model.pkl"))
 
 @st.cache_resource
 def load_model():
@@ -24,10 +24,7 @@ model = load_model()
 # ---------------------------------------------------------
 # Defaults LOADING (config-driven path, cached with hourly refresh)
 # ---------------------------------------------------------
-DEFAULTS_PATH = os.getenv(
-    "FRAUD_DEFAULTS_PATH",
-    "/Users/maddy/Projects/FRAUDDETECTION360_Complete/artifacts/feature_defaults.json"
-)
+DEFAULTS_PATH = os.getenv("FRAUD_DEFAULTS_PATH", os.path.join(REPO_ROOT, "artifacts", "feature_defaults.json"))
 
 @st.cache_data
 def load_defaults():
@@ -41,10 +38,7 @@ categorical_categories = feature_defaults_raw["categorical_categories"]
 # ---------------------------------------------------------
 # DATA LOADING (config-driven path, cached with hourly refresh)
 # ---------------------------------------------------------
-DATA_PATH = os.getenv(
-    "FRAUD_DATA_PATH",
-    "/Users/maddy/Projects/FRAUDDETECTION360_Complete/datasets/processed/fraud_dashboard_export.csv"
-)
+DATA_PATH = os.getenv("FRAUD_DATA_PATH", os.path.join(REPO_ROOT, "datasets", "processed", "fraud_dashboard_export.csv"))
 
 @st.cache_data(ttl=3600)
 def load_data():
