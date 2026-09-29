@@ -2,7 +2,7 @@
 
 A fraud risk-scoring system built on 590,540 real e-commerce transactions — balancing fraud detection against customer experience through evidence-based feature engineering, model comparison, and cost-optimized decision thresholds.
 
-**[Live App](#) · [Power BI Dashboard](#) · [LinkedIn Write-up](#)**
+**[Live App](https://frauddetection360.streamlit.app) · [Power BI Dashboard](#) · [LinkedIn Write-up](#)**
 
 ---
 
