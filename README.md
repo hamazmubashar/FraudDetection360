@@ -46,7 +46,8 @@ Trained on a **time-based split** (not random) — the model always predicts the
 Rather than a fixed 50% cutoff, the deployed threshold is derived from actual business costs:
 - False Negative cost (missed fraud): **$149.24** — data-derived average fraud transaction amount
 - False Positive cost (blocked customer): **$10** — a documented, *configurable* business assumption
-- At these assumptions: optimal threshold = **0.55**, reducing total cost from $971K (naive threshold) to **$273K** — a 91% reduction
+- At these assumptions: optimal threshold = **0.55**, reducing total cost to **$273K** — 72% lower than at a permissive 0.05 threshold ($971K) and 32% lower than at a strict 0.90 threshold ($401K)
+- At 0.55 the model catches **71% of fraud** (2,895 of 4,064 test cases) at 23% alert precision
 
 **Sensitivity tested:** the optimal threshold ranges from 0.40 to 0.85 depending on the FP-cost assumption ($5-$50) — the app lets this be adjusted live rather than hardcoding one number as universally "correct."
 
