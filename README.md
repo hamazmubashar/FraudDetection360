@@ -2,7 +2,12 @@
 
 A fraud risk-scoring system built on 590,540 real e-commerce transactions — balancing fraud detection against customer experience through evidence-based feature engineering, model comparison, and cost-optimized decision thresholds.
 
-**[Live App](https://frauddetection360.streamlit.app) · [Power BI Dashboard](#) · [LinkedIn Write-up](#)**
+[![Live App](https://img.shields.io/badge/Live_App-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://frauddetection360.streamlit.app)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![LightGBM](https://img.shields.io/badge/LightGBM-Model-2E8B57?style=for-the-badge)](https://lightgbm.readthedocs.io/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+**[🚀 Try the Live App](https://frauddetection360.streamlit.app)** · [Key Findings](#key-findings) · [The Model](#the-model) · [Run Locally](#running-the-app-locally)
 
 ---
 
@@ -57,11 +62,11 @@ Rather than a fixed 50% cutoff, the deployed threshold is derived from actual bu
 ## Project Structure
 
 ```
-FRAUDDETECTION360_Complete/
+FraudDetection360/
 ├── notebooks/          # 01-06: data quality → EDA → features → models → imbalance → threshold
 ├── sql/                # 10 documented business queries
 ├── datasets/
-│   ├── raw/
+│   ├── raw/            # not committed — download from Kaggle (see below)
 │   └── processed/
 ├── artifacts/          # saved model, feature defaults, config
 ├── app/                # Streamlit application
@@ -71,13 +76,15 @@ FRAUDDETECTION360_Complete/
 ## Running the App Locally
 
 ```bash
-git clone <repo-url>
-cd FRAUDDETECTION360_Complete
+git clone https://github.com/hamazmubashar/FraudDetection360.git
+cd FraudDetection360
 conda create -n frauddetection python=3.11 -y
 conda activate frauddetection
 pip install -r requirements.txt
 streamlit run app/app.py
 ```
+
+The app runs from the saved artifacts in `artifacts/` — no raw data needed. To re-run the notebooks, download `train_transaction.csv` and `train_identity.csv` from the [IEEE-CIS Fraud Detection competition](https://www.kaggle.com/c/ieee-fraud-detection/data) and place them in `datasets/raw/`.
 
 ## Known Limitations
 
