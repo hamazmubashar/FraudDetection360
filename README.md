@@ -1,80 +1,68 @@
-# 🛡️ FraudDetection360
+<div align="center">
 
-A fraud risk-scoring system built on 590,540 real e-commerce transactions — balancing fraud detection against customer experience through evidence-based feature engineering, model comparison, and cost-optimized decision thresholds.
+# FraudDetection360
+
+**Fraud scoring for 590,540 real card transactions, with the block/allow cutoff set by what each mistake actually costs.**
 
 [![Live App](https://img.shields.io/badge/Live_App-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://frauddetection360.streamlit.app)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![LightGBM](https://img.shields.io/badge/LightGBM-Model-2E8B57?style=for-the-badge)](https://lightgbm.readthedocs.io/)
+[![MySQL](https://img.shields.io/badge/MySQL-Queries-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](sql/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
-**[🚀 Try the Live App](https://frauddetection360.streamlit.app)** · [Key Findings](#key-findings) · [The Model](#the-model) · [Run Locally](#running-the-app-locally)
+[**Try the live app**](https://frauddetection360.streamlit.app) · [Findings](#what-the-data-showed) · [The model](#the-model) · [The cutoff](#choosing-the-cutoff) · [Run it](#run-it-locally)
+
+</div>
 
 ---
 
-## The Business Problem
+## The problem
 
-A payment company needs to flag fraudulent transactions in real time — but every decision carries two competing costs:
-- **Miss fraud** → direct financial loss
-- **Wrongly block a good customer** → lost sale, support cost, churn risk
+Every fraud decision can go wrong in two ways. Miss a fraudulent payment and the company loses the money. Block a genuine customer and it loses the sale, pays for a support call, and may lose the customer. A model that only maximises accuracy ignores that trade-off.
 
-This project builds a system that doesn't just predict fraud, but recommends a business-optimal action, based on the actual dollar cost of each type of mistake.
+So this project doesn't stop at "fraud or not". It scores each transaction and then picks the cutoff that minimises the total cost of both kinds of mistake, with the cost assumptions visible and adjustable in the app.
 
-## Dataset
+**Data:** [IEEE-CIS Fraud Detection](https://www.kaggle.com/c/ieee-fraud-detection) on Kaggle. 590,540 real e-commerce transactions, about 3.5% fraud, 439 raw columns covering the transaction, card, device and 300+ anonymised behaviour signals.
 
-[IEEE-CIS Fraud Detection](https://www.kaggle.com/c/ieee-fraud-detection) (Kaggle) — 590,540 real transactions, ~3.5% fraud rate, 439 raw features (transaction, card, device, and 300+ anonymized behavioral signals).
-
-## Key Findings
+## What the data showed
 
 | Finding | Detail |
 |---|---|
-| **Identity tracking is itself a signal** | Transactions with device/identity data tracked show a fraud rate 4x higher (7.85% vs 2.09%) than untracked ones — tracking correlates with pre-existing risk flags from the payment processor. |
-| **Rate ≠ dollar impact** | ProductCD='C' has the highest fraud *rate* (11.7%), but ProductCD='W' (74% of volume) causes the highest dollar *losses* — two different segments need two different responses. |
-| **A real risk window: 6-9AM** | Fraud rate spikes to ~10-14% in low-volume early hours, confirmed to replicate across independent time splits — and this risk **intensified** over the dataset's 6-month span, direct evidence of fraud-pattern drift. |
-| **Credit riskier than debit** | 6.7% vs 2.4% fraud rate, on large, reliable samples. |
-| **Mobile riskiest device** | 10.2% fraud rate vs 6.5% desktop, 2.1% untracked. |
+| Having identity data is itself a warning sign | Transactions with device/identity records were fraud 7.85% of the time versus 2.09% without. The payment processor seems to collect this data when something already looks risky. |
+| The highest fraud rate isn't the biggest loss | Product type C has the highest fraud rate (11.7%), but type W, at 74% of volume, loses the most money. They need different responses. |
+| Early morning is risky, and getting riskier | Fraud runs at 10–14% between 6 and 9 AM. The pattern held across separate time periods and grew over the six months, a clear sign of drift. |
+| Credit is riskier than debit | 6.7% versus 2.4%, on large samples. |
+| Mobile is the riskiest device | 10.2%, versus 6.5% on desktop and 2.1% where the device isn't recorded. |
 
-Full investigation notebooks: [`notebooks/`](notebooks/)
+Each notebook has a matching write-up in [`docs/`](docs/).
 
-## The Model
+## The model
 
-**LightGBM**, selected after comparing Logistic Regression, Random Forest, SMOTE-resampling, and Isolation Forest anomaly detection — LightGBM won on ROC-AUC (0.90) and PR-AUC while natively handling missing data and categorical features without lossy workarounds.
+I compared Logistic Regression, Random Forest, SMOTE oversampling and Isolation Forest against **LightGBM**, which won on both ROC-AUC (0.90) and PR-AUC. It also handles missing values and categories natively, which matters when most identity columns are empty.
 
-Trained on a **time-based split** (not random) — the model always predicts the future from the past, mirroring real deployment.
+Training and testing use a **time-based split**: the model always predicts later transactions from earlier ones, the way it would in production. A random split would leak future patterns into training and flatter the scores.
 
-## The Threshold Decision
+## Choosing the cutoff
 
-Rather than a fixed 50% cutoff, the deployed threshold is derived from actual business costs:
-- False Negative cost (missed fraud): **$149.24** — data-derived average fraud transaction amount
-- False Positive cost (blocked customer): **$10** — a documented, *configurable* business assumption
-- At these assumptions: optimal threshold = **0.55**, reducing total cost to **$273K** — 72% lower than at a permissive 0.05 threshold ($971K) and 32% lower than at a strict 0.90 threshold ($401K)
-- At 0.55 the model catches **71% of fraud** (2,895 of 4,064 test cases) at 23% alert precision
+Instead of the default 0.5, the cutoff comes from costs:
 
-**Sensitivity tested:** the optimal threshold ranges from 0.40 to 0.85 depending on the FP-cost assumption ($5-$50) — the app lets this be adjusted live rather than hardcoding one number as universally "correct."
+- **Missed fraud:** $149.24, the average fraudulent transaction in the data
+- **Blocked genuine customer:** $10, an assumption you can change in the app
 
-## Tech Stack
+With those numbers the best cutoff is **0.55**. It catches **71% of fraud** (2,895 of 4,064 cases in the test period), with 23% of alerts being real fraud. Total modelled cost is about **$273K**: 72% lower than a lenient 0.05 cutoff ($971K) and 32% lower than a strict 0.90 cutoff ($401K).
 
-| Layer | Tools |
+The right cutoff depends on that $10 assumption. Across $5 to $50 it moves between 0.40 and 0.85, which is why the app lets you adjust it instead of presenting one number as correct.
+
+## Tech stack
+
+| Area | Tools |
 |---|---|
-| Data processing & modeling | Python, pandas, scikit-learn, LightGBM, imbalanced-learn |
-| Database | MySQL |
-| BI Dashboard | Power BI |
-| Web App | Streamlit, Plotly |
+| Data and modelling | Python, pandas, scikit-learn, LightGBM, imbalanced-learn |
+| SQL | MySQL, 10 business queries in [`sql/`](sql/) |
+| BI | Power BI dashboard |
+| App | Streamlit, Plotly |
 
-## Project Structure
-
-```
-FraudDetection360/
-├── notebooks/          # 01-06: data quality → EDA → features → models → imbalance → threshold
-├── sql/                # 10 documented business queries
-├── datasets/
-│   ├── raw/            # not committed — download from Kaggle (see below)
-│   └── processed/
-├── artifacts/          # saved model, feature defaults, config
-├── app/                # Streamlit application
-└── docs/               # phase-by-phase findings write-ups
-```
-
-## Running the App Locally
+## Run it locally
 
 ```bash
 git clone https://github.com/hamazmubashar/FraudDetection360.git
@@ -85,16 +73,33 @@ pip install -r requirements.txt
 streamlit run app/app.py
 ```
 
-The app runs from the saved artifacts in `artifacts/` — no raw data needed. To re-run the notebooks, download `train_transaction.csv` and `train_identity.csv` from the [IEEE-CIS Fraud Detection competition](https://www.kaggle.com/c/ieee-fraud-detection/data) and place them in `datasets/raw/`.
+The app runs from the saved model in `artifacts/`, so you don't need the raw data. To re-run the notebooks, download `train_transaction.csv` and `train_identity.csv` from the [competition page](https://www.kaggle.com/c/ieee-fraud-detection/data) into `datasets/raw/`.
 
-## Known Limitations
+## Project structure
 
-This is a portfolio project demonstrating end-to-end fraud detection methodology — not a production system. Specifically:
-- Cost assumptions ($10 FP, $149.24 FN) are estimates, not verified against real business data
-- No live retraining pipeline, despite evidence that fraud patterns drift over time
-- Some model features (Vesta's anonymized `V` columns) are pre-engineered in the source dataset and would need equivalent real-time computation in production
-- Validated on a single historical test split, not live A/B tested
+```
+FraudDetection360/
+├── notebooks/       # 6 notebooks: data quality → EDA → features → models → imbalance → cutoff
+├── docs/            # written findings for each notebook
+├── sql/             # business queries
+├── app/             # Streamlit app
+├── artifacts/       # saved model, feature defaults and config
+└── datasets/
+    ├── raw/         # not committed; download from Kaggle
+    └── processed/
+```
+
+## Limitations
+
+This shows the full method end to end; it isn't a production system.
+
+- The $10 and $149.24 costs are estimates, not figures from a real business.
+- Fraud patterns drift (the morning spike grew over time), but there's no retraining pipeline yet.
+- Many of the strongest features are anonymised columns pre-computed by the data provider; production would need to build equivalents in real time.
+- Results come from one historical test period, not a live trial.
 
 ## Author
 
-**Hamaz Mubashar** — [LinkedIn](https://www.linkedin.com/in/hamazmubashar)
+**Hamaz Mubashar** · [LinkedIn](https://www.linkedin.com/in/hamazmubashar) · [GitHub](https://github.com/hamazmubashar)
+
+Released under the [MIT License](LICENSE).
